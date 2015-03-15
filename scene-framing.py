@@ -16,35 +16,32 @@
 bl_addon_info = {
     "name": "Scene Framing",
     "author": "Michelangelo Manrique aka Magicland",
-    "version": (0,1),
+    "version": (0,2),
     "blender": (2, 5, 6),
-    "api": 31847,
     "location": "Scene Properties Panel",
     "description": "This script calculates the amount of frames required for any scene according the number of seconds",
     "warning": "",
     "wiki_url": "http://wiki.blender.org/index.php/Extensions:2.5/Py/"\
         "Scripts/Scene/Scene_Framing",
     "category": "System"}
-        
-        
 
 """
 Rev 0. Initial release
+Rev 1. Testing
+Rev 2. Implemented with auto RenderSettings.fps variable
+       and RenderSettings.fps_base variable
 """
 
 import bpy
 from bpy.props import *
 
 nf="0"
-fps=int(24)
-
-global fps
 
 class OBJECT_PT_Framing(bpy.types.Panel):
     bl_label="Scene Framing"
     bl_space_type="PROPERTIES"
     bl_region_type="WINDOW"
-    bl_context="scene"
+    bl_context="render"
    
     bt=bpy.types.Scene
            
@@ -59,13 +56,11 @@ class OBJECT_PT_Framing(bpy.types.Panel):
         
         obj=context.object
         scene=context.scene
-        
       
         split=layout.split()
         col=split.column()
        
         col.prop(scene, "prop_seconds", slider=False)
-        
         
         col.operator("op.calcFrames",text="Calculate")
         
@@ -77,17 +72,21 @@ class SCENE_OT_calc(bpy.types.Operator):
     ''''''
     bl_idname = "op.calcFrames"
     bl_label = "Calculate"
-    
+ 
     def execute(self, context):
         
         scene=context.scene
+        
+        fps=bpy.context.scene.render.fps
+        frb=bpy.context.scene.render.fps_base
            
         propSeconds=scene.prop_seconds
-        nfint=int(propSeconds*fps)
+        nfint=int(propSeconds*fps/frb)
         nf=str(nfint)
         scene.frame_end=nfint
         
         global nf
+        global fps
         
         return {'FINISHED'}       
 
